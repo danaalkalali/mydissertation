@@ -1,11 +1,11 @@
-# Using Satija Guided Clustering Tutorial (https://satijalab.org/seurat/articles/pbmc3k_tutorial.html#standard-pre-processing-workflow) 
-# on Espinoza et al. 2023 scRNAseq data! 
+#Using Satija Guided Clustering Tutorial (https://satijalab.org/seurat/articles/pbmc3k_tutorial.html#standard-pre-processing-workflow) 
+#on Espinoza et al. 2023 scRNAseq data! 
 
 library(dplyr)
 library(Seurat)
 library(patchwork)
 
-# Creating Seurat object 
+#Creating Seurat object 
 
 patient2.data <- Read10X(data.dir = "/Users/danaalkalali/Downloads/Amit2")
 
@@ -14,8 +14,8 @@ patient2
 
 patient2[["percent.mt"]] <- PercentageFeatureSet(patient2, pattern = "^MT-")
 
-# QC Seurat 
-# Question: how will we choose # of features and mtDNA?
+#QC Seurat 
+#Question: how will we choose # of features and mtDNA?
 
 VlnPlot(patient2, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
 
@@ -25,23 +25,23 @@ plot1 + plot2
 
 patient2 <- subset(patient2, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
 
-# Data Normalization 
+#Data Normalization 
 
 patient2 <- NormalizeData(patient2, normalization.method = "LogNormalize", scale.factor = 10000)
 
 patient2 <- FindVariableFeatures(patient2)
 top10 <- head(VariableFeatures(patient2), 10)
-# print(top10)
+#print(top10)
 plot1 <- VariableFeaturePlot(patient2)
 plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE, xnudge = 0, ynudge = 0)
 plot1 + plot2
 
-# Data Scaling! 
+#Data Scaling! 
 
 all.genes <- rownames(patient2)
 patient2 <- ScaleData(patient2, features = all.genes)
 
-# Linear Dimension Reduction 
+#Linear Dimension Reduction 
 
 patient2 <- RunPCA(patient2, features = VariableFeatures(object = patient2))
 
@@ -53,15 +53,15 @@ DimPlot(patient2, reduction = "pca")
 DimHeatmap(patient2, dims = 1, cells = 500, balanced = TRUE)
 DimHeatmap(patient2, dims = 1:15, cells = 500, balanced = TRUE)
 
-# Determining Dimensionality 
+#Determining Dimensionality 
 
 patient2 <- JackStraw(patient2, num.replicate = 100)
 patient2 <- ScoreJackStraw(patient2, dims = 1:20)
 JackStrawPlot(patient2, dims = 1:15)
 
-# All these PCs seem quite strong right?! (1-15) :) i.e. solid curve above dashed line. Should we add even more (compared to the tutorial?)
+#All these PCs seem quite strong right?! (1-15) :) i.e. solid curve above dashed line. Should we add even more (compared to the tutorial?)
 
-# Clustering time!!! Woohoo
+#Clustering time!!! Woohoo
 
 patient2 <- FindNeighbors(patient2, dims = 1:10)
 patient2 <- FindClusters(patient2, resolution = 0.5)
@@ -92,9 +92,9 @@ patient2.markers %>%
 
 cluster0.markers <- FindMarkers(patient2, ident.1 = 0, logfc.threshold = 0.25, test.use = "roc", only.pos = TRUE)
 print(cluster0.markers)
-# How do I interpret these results exactly?
+#Question: How do I interpret these results exactly?
 
-# I chose the top 2 genes from the results to graph in a violin plot
+#I chose the top 2 genes from the results to graph in a violin plot
 VlnPlot(patient2, features = c("MALAT1", "CXCR4"))
 
 patient2.markers %>%
@@ -103,4 +103,4 @@ patient2.markers %>%
 DoHeatmap(patient2, features = top10$gene) + NoLegend()
 #Getting an error ^^^ 
 
-# Does the last part of the tutorial apply to this dataset (assigning cell type identity to clusters)?
+#Question: Does the last part of the tutorial apply to this dataset (assigning cell type identity to clusters)?
