@@ -92,8 +92,7 @@ head(cluster2.markers, n = 5)
 cluster5.markers <- FindMarkers(combined, ident.1 = 5, ident.2 = c(0, 3), min.pct = 0.25)
 head(cluster5.markers, n = 5)
 
-
-combined.markers <- FindAllMarkers(combined, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+combined.markers <- FindAllMarkers(combined, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.3) 
 combined.markers %>%
   group_by(cluster) %>%
   slice_max(n = 2, order_by = avg_log2FC)
