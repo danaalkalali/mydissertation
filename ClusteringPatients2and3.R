@@ -103,14 +103,62 @@ DimPlot(combined, reduction = "umap")
 # Top 10 genes of the clusters, however I'm using FindAllMarkers function instead of 
 # FindMarkers compared to the tutorial :D: 
 
+cluster0.markers <- FindMarkers(combined, ident.1 = 0, min.pct = 0.25)
+print(paste(rownames(x = cluster0.markers)[1:50], collapse = ", "))
+
 cluster1.markers <- FindMarkers(combined, ident.1 = 1, min.pct = 0.25)
-head(cluster1.markers, n = 10)
-  
+print(paste(rownames(x = cluster1.markers)[1:50], collapse = ", "))
+
 cluster2.markers <- FindMarkers(combined, ident.1 = 2, min.pct = 0.25)
-head(cluster2.markers, n = 10)
+print(paste(rownames(x = cluster2.markers)[1:50], collapse = ", "))
 
 cluster3.markers <- FindMarkers(combined, ident.1 = 3, min.pct = 0.25)
-head(cluster3.markers, n = 10)
+print(paste(rownames(x = cluster3.markers)[1:50], collapse = ", "))
+
+cluster4.markers <- FindMarkers(combined, ident.1 = 4, min.pct = 0.25)
+print(paste(rownames(x = cluster4.markers)[1:50], collapse = ", "))
+
+cluster5.markers <- FindMarkers(combined, ident.1 = 5, min.pct = 0.25)
+print(paste(rownames(x = cluster5.markers)[1:50], collapse = ", "))
+
+cluster6.markers <- FindMarkers(combined, ident.1 = 6, min.pct = 0.25)
+print(paste(rownames(x = cluster6.markers)[1:50], collapse = ", "))
+
+cluster7.markers <- FindMarkers(combined, ident.1 = 7, min.pct = 0.25)
+print(paste(rownames(x = cluster7.markers)[1:50], collapse = ", "))
+
+cluster8.markers <- FindMarkers(combined, ident.1 = 8, min.pct = 0.25)
+print(paste(rownames(x = cluster8.markers)[1:50], collapse = ", "))
+
+cluster9.markers <- FindMarkers(combined, ident.1 = 9, min.pct = 0.25)
+print(paste(rownames(x = cluster9.markers)[1:50], collapse = ", "))
+
+cluster10.markers <- FindMarkers(combined, ident.1 = 10, min.pct = 0.25)
+print(paste(rownames(x = cluster10.markers)[1:50], collapse = ", "))
+
+cluster11.markers <- FindMarkers(combined, ident.1 = 11, min.pct = 0.25)
+print(paste(rownames(x = cluster11.markers)[1:50], collapse = ", "))
+
+cluster12.markers <- FindMarkers(combined, ident.1 = 12, min.pct = 0.25)
+print(paste(rownames(x = cluster12.markers)[1:50], collapse = ", "))
+
+cluster13.markers <- FindMarkers(combined, ident.1 = 13, min.pct = 0.25)
+print(paste(rownames(x = cluster13.markers)[1:50], collapse = ", "))
+
+cluster14.markers <- FindMarkers(combined, ident.1 = 14, min.pct = 0.25)
+print(paste(rownames(x = cluster14.markers)[1:50], collapse = ", "))
+
+cluster15.markers <- FindMarkers(combined, ident.1 = 15, min.pct = 0.25)
+print(paste(rownames(x = cluster15.markers)[1:50], collapse = ", "))
+
+cluster16.markers <- FindMarkers(combined, ident.1 = 16, min.pct = 0.25)
+print(paste(rownames(x = cluster16.markers)[1:50], collapse = ", "))
+
+cluster17.markers <- FindMarkers(combined, ident.1 = 17, min.pct = 0.25)
+print(paste(rownames(x = cluster17.markers)[1:50], collapse = ", "))
+
+cluster18.markers <- FindMarkers(combined, ident.1 = 18, min.pct = 0.25)
+print(paste(rownames(x = cluster18.markers)[1:50], collapse = ", "))
 
 
 #Other fun stuff, 
