@@ -1,0 +1,257 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+# Load libraries
+
+get_ipython().system(' pip install xgboost')
+get_ipython().system(' pip install shap')
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from sklearn.metrics import roc_auc_score, roc_curve
+import xgboost as xgb
+import shap
+import matplotlib.pyplot as plt
+
+
+
+# In[2]:
+
+
+# read data 
+# the order of the samples must in the same in both files
+clin = pd.read_csv('/Users/danaalkalali/Downloads/Dana/output/pheno.csv', header = 0, index_col=0) # clinical data
+data = pd.read_csv('/Users/danaalkalali/Downloads/Dana/output/gene.csv', index_col = 0) # gene expression
+data = data.T 
+
+
+cluster0 = ["RPS27", "SELL", "TMSB10", "CXCR4", "MALAT1", "GAPDH", "RPS26", "IGHD", "IGHM", "B2M", "KLF2", "RPS4Y1", "CD27", "PKM", "BTG1", "HLA-DRB1", "HLA-A", "RGS13", "HLA-DRB5", "PLAC8", "FABP5", "RPS24", "ACTG1", "PRDX1", "MEF2C", "ENO1", "CD37", "RPL34", "CD52", "HSPA8", "PPA1", "RFTN1", "NME1", "SLC25A3", "YWHAE", "HMGA1", "HSP90AB1", "BANK1", "SNRPE", "ATP5MC3", "SEC61B", "SERF2", "RGS10", "HSPD1", "HMGN1", "UBE2J1", "PTTG1", "RPL13", "NDUFS5", "SNRPD1"]
+filtered_data = data.loc[:, data.columns.isin(cluster0)]
+output_path = '/Users/danaalkalali/Downloads/Dana/output/cluster0genes.csv'
+filtered_data.to_csv(output_path)
+
+#cluster0 = ["RPS27", "SELL", "TMSB10", "CXCR4", "MALAT1", "GAPDH", "RPS26", "IGHD", "IGHM", "B2M", "KLF2", "RPS4Y1", "CD27", "PKM", "BTG1", "HLA-DRB1", "HLA-A", "RGS13", "HLA-DRB5", "PLAC8", "FABP5", "RPS24", "ACTG1", "PRDX1", "MEF2C", "ENO1", "CD37", "RPL34", "CD52", "HSPA8", "PPA1", "RFTN1", "NME1", "SLC25A3", "YWHAE", "HMGA1", "HSP90AB1", "BANK1", "SNRPE", "ATP5MC3", "SEC61B", "SERF2", "RGS10", "HSPD1", "HMGN1", "UBE2J1", "PTTG1", "RPL13", "NDUFS5", "SNRPD1"]
+#cluster1 = ["MT-ND3", "RPS26", "RPLP2", "RPS4Y1", "MT-ATP6", "MT-CYB", "EIF5A", "RPL34", "MT-CO2", "MALAT1", "CXCR4", "RPL18A", "MT-ND2", "RPS14", "RPL10", "RPL13A", "MT-ND4", "PRDX1", "MT-CO3", "RPS19", "RPS12", "GAPDH", "PFN1", "RPS27", "RPL39", "RGS13", "TMSB10", "IGHG3", "FABP5", "BASP1", "RPLP1", "HSPA8", "RPL30", "RPL32", "YWHAE", "ARPC2", "BTG1", "RPS23", "HLA-DRB1", "NME1", "SEC61B", "UBE2J1", "RPS5", "MT-CO1", "ENO1", "HSPD1", "RPS3A", "PKM", "RPL13", "RPL21"]
+#cluster2 = ["S100A6", "S100A4", "RPS14", "RPS26", "TNFRSF13B", "MT-ND3", "RPLP2", "RPS4Y1", "RPL10", "RPL39", "EEF1A1", "VIM", "TCL1A", "MT-ND4", "RPL34", "MT-ND2", "ACP5", "RPL32", "RPS15A", "RPL13", "RPS29", "MT-CYB", "MT-ATP6", "RPL9", "RPL13A", "RPL11", "RPS27", "RPL41", "RPL30", "MT-CO3", "HLA-C", "MT-CO2", "RPS28", "RPS12", "RPS2", "EMP3", "RPL18A", "RPL37A", "B2M", "RPS8", "RPL12", "RPL26", "MT-ND1", "CD27", "RPS6", "PLP2", "EIF5A", "LGALS1", "RPS21", "RPL23A"]
+#cluster3 = ["TNFRSF18", "ENO1", "SRM", "YBX1", "HSPE1", "NPM1", "HSP90AB1", "FABP5", "PSAT1", "TXN", "LDHA", "NPM3", "RAN", "PSME2", "PKM", "NME1", "PYCR1", "MIR155HG", "RANBP1", "NHP2", "PA2G4", "DDX21", "HSPA8", "EBNA1BP2", "HSPD1", "LAPTM5", "GARS", "MRTO4", "SNRPE", "PRDX1", "PSMA7", "CMSS1", "NOP16", "PHB", "LTB", "NCL", "CD83", "CD74", "GPATCH4", "MRPL12", "RPF2", "FKBP4", "EIF4EBP1", "NOLC1", "GNL3", "HSPA9", "CCT6A", "CD52", "ATP1B3", "TUBA1B"]
+#cluster4 = ["RPS26", "CD69", "HLA-A", "RPS4Y1", "MS4A1", "EIF5A", "ZFP36L1", "CCR7", "RGS13", "CD27", "HLA-DRB5", "CD83", "HSP90AB1", "FTH1", "HLA-B", "BANK1", "MEF2C", "JCHAIN", "MARCKS", "RPL27", "MIR155HG", "TMSB10", "IGHD", "BTG1", "HLA-DRB1", "UBE2J1", "ISG20", "LTB", "GAPDH", "LAPTM5", "IGLC2", "ARHGAP24", "POU2AF1", "IGHG2", "PKIG", "COTL1", "LINC00926", "PRDX2", "EZR", "PSME2", "DDX5", "PDCD4", "CYBA", "CLEC2D", "NFKBIA", "JUN", "SMC6", "IL2RG", "HMGB2", "NCF1"]
+#cluster5 = ["RPS12", "MT-ND2", "EEF1A1", "RPS4Y1", "RPLP1", "RPLP2", "MT-ND3", "RPS26", "RPSA", "RPL5", "LTB", "RPL13A", "RPS5", "HLA-DRB1", "MT-CYB", "MT-ATP6", "RPL10", "RPLP0", "RPS24", "HSP90AB1", "RPL9", "RGS13", "RPS3A", "PKM", "HLA-DPB1", "RPS2", "MT-ND4", "IGHG3", "ZFP36L1", "JCHAIN", "RPL6", "EEF1B2", "RPS23", "RPS6", "HLA-DRA", "RPL37A", "RPS14", "RPL7A", "EZR", "LAPTM5", "ISG20", "FTH1", "RPL12", "RPL14", "UBE2J1", "TMSB10", "S100A10", "RPL7", "IGHG4", "HNRNPA1"]
+#cluster6 = ["SUGCT", "AICDA", "HRK", "DAAM1", "SERF2", "NEIL1", "JCHAIN", "SUSD3", "ATP5MG", "WDR66", "LTB", "B2M", "GAPDH", "RGS13", "HLA-A", "CD27", "UBE2J1", "SH3TC1", "EZR", "TCL1A", "CD79B", "AC023590.1", "VNN2", "LIMD2", "RNGTT", "SAT1", "SNTA1", "ACTG1", "LPP", "POU2AF1", "ISG20", "HMGN1", "CD81", "BCAS4", "CD38", "TCEA1", "LAPTM5", "ASB2", "MARCKSL1", "MALAT1", "SLC2A5", "ACTB", "IRF8", "HLA-B", "CORO1A", "MME", "AIM2", "S1PR2", "DEF8", "ST14"]
+#cluster7 = ["S100A4", CAPG", S100A6", VIM", B2M", TCL1A", COTL1", ITGB7", GPR183", HLA-DPB1", MYO1F", TNFRSF13B", ACP5", CLECL1", HLA-A", EMP3", PYCARD", SH3BGRL3", HLA-E", ANXA2", CD52", IGHA1", S100A11", PLP2", LSP1", CRIP1", HLA-B", KLF2", S100A10", ANXA4", RPS18", IGHG2", RPS26", FCGR2B", LGALS1", RPL41", IGHM", CTSH", CD44", RPS29", HLA-DRA", IGHG3", S1PR4", TMSB4X", RPL36", IFITM2", TMSB10", RNASET2", RPS4X", PLAC8"]
+#cluster8 = ["RPL11", RPS8", TENT5C", RPS27", KCNN3", RGS1", QPCT", ERLEC1", RPS27A", CYTOR", RPL31", MIR4435-2HG", DHRS9", CHPF", ITM2C", PTMA", RPL32", ANKRD28", RPL15", GMPPB", MANF", SELENOK", PDIA5", SEC61A1", RPN1", SRPRB", CHST2", SSR3", DNAJB11", CD38", JCHAIN", RPL34", SEC24D", RPS3A", SPCS3", CLPTM1L", RPS23", ELL2", TXNDC15", SIL1", MZB1", CPEB4", IRF4", HIST1H1C", RPS18", EEF1A1", PRDM1", RPS12", CHST12", KDELR2"]
+#cluster9 = ["SEMA4A", FCRL2", RGS13", RASSF6", EML6", BIK", ADA", GCHFR", NEIL1", CD9", PIM1", SH3TC1", DLAT", LINC01857", GRHPR", HRK", CCDC88A", RFTN1", SERF2", SIT1", TCL1A", CD79B", AC023590.1", ACADM", PITPNC1", RGS10", GSN", DSTN", DCAF12", ST14", CD27", FNBP1", COL9A3", BCAS4", DTX1", GAPDH", SUSD3", GCSAM", KIAA0040", SORL1", BASP1", ARPC2", CD81", PTPN18", OTULIN", MKNK2", RUBCNL", EMP3", SMARCB1", TMSB10"]
+#cluster10 = ["LMO2", SERPINA9", RGS13", HMCES", CCDC144A", VPREB3", MARCKSL1", HTR3A", LPP", S1PR2", UBE2J1", NANS", NEIL1", ACTB", SERF2", CD22", CD74", AC023590.1", TOX", SUSD3", RPRD1B", ATP5MG", WDR66", A4GALT", ASB13", SEL1L3", ARPC2", RPS12", CORO1A", DEF8", JCHAIN", PARP1", ALDH2", GAPDH", CD38", ACTG1", TCEA1", LAPTM5", BASP1", HMGN1", VNN2", HLA-DRB1", PRPSAP2", LRMP", RPL41", RPS29", GRHPR", CPNE5", RPLP2", SUGCT"]
+#cluster11 = ["STMN1", HMGN2", CDCA8", CDC20", KIF2C", DEPDC1", NUF2", ASPM", NEK2", CENPF", CENPA", BUB1", CKAP2L", SGO2", TACC3", CENPE", MAD2L1", CCNA2", MND1", HMGB2", CCNB1", PTTG1", HMMR", MXD3", KIFC1", CENPW", KIF4A", HMGB3", CDCA2", PBK", ZWINT", CDK1", CEP55", MKI67", CDCA3", AICDA", TROAP", RACGAP1", HMGB1", CDKN3", DLGAP5", KNSTRN", NUSAP1", CCNB2", PCLAF", PIF1", KIF23", PRC1", PLK1", SHCBP1"]
+#cluster12 = ["BCL2A1", BIK", DUSP2", NFATC1", TRAF4", FCRL5", FCRL2", GMDS", CCDC88A", RGS13", NME1", LMO2", ID2", PPAN", MARCKSL1", SORL1", CCDC28B", SMS", UBALD2", PRDX1", MAP3K8", SEMA4A", TESC", NFKBIE", MCOLN2", HSP90AB1", SAMSN1", LCK", CD83", NFKBID", ACADM", ABRACL", SYAP1", PITPNC1", SNX8", FABP5", HERPUD1", RGS10", PIM1", SYNGR2", RRP1", OTULIN", BASP1", BATF", SPIB", C1QBP", PAICS", SERPINA9", ATIC", B2M"]
+#cluster13 = ["PLCG2", AC007952.4", HLA-B", B2M", MT-CO1", PCLAF", HLA-A", HMGB2", MT-CO2", MT-CYB", MT-ND2", EEF1A1", IGHM", MT-ND4", MT-ND3", MT-CO3", HMGN2", FTL", EMP3", SERF2", HLA-E", HMGB1", MT-ATP6", BTG1", MT-ND1", ATP5MG", PABPC1", RGS13", PTMA", H3F3A", TMSB4X", MT-ND5", SARAF", UBC", RPL13", HMGN1", EEF2", RPL3", CCR7", HLA-DRB1", RPL18A", IGHD", PTTG1", BANK1", ZNF277", TMA7", CD79A", RPS26", SUB1", VPREB3"]
+#cluster14 = ["EGR3", MYC", EGR2", CCL3", CCL4", CCL3L1", CCL4L2", NR4A1", DUSP2", EGR1", NFKBID", CD83", NFKBIA", MIR155HG", CD69", PTGER4", PIM3", BCL2A1", SLAMF1", IER2", RILPL2", DDX21", NFKBIE", PHACTR1", HSP90AB1", NOP16", PLEK", EIF1", SNHG15", PNO1", CD79B", NOLC1", SIAH2", JUNB", SLC3A2", GBP2", EIF4A1", PAK1IP1", RPF2", SRSF7", LYAR", CYCS", SRGN", HSPA9", MRTO4", PPP1R15A", FABP5", TUBA1B", NME1", REL"]
+#cluster15 = ["CLSPN", RRM2", MCM6", SPC25", CDCA7", CENPU", DHFR", GMNN", CENPW", MCM7", MCM4", ATAD2", FEN1", CHEK1", ZWINT", CDK1", HELLS", MKI67", NUSAP1", WDR76", PCLAF", ORC6", GINS2", CDT1", CDC6", BRCA1", TK1", TYMS", PCNA", E2F1", MYBL2", CHAF1A", UHRF1", ASF1B", CDC45", CENPM", RMI2", BIRC5", MND1", DNMT1", MCM2", RRM1", CDKN3", RAD51AP1", MAD2L1", MCM3", RFC4", TOP2A", HMGB2", CTNNAL1"]
+#cluster16 = ["IFI44L", IFIT3", XAF1", IFI6", MX1", MX2", ISG15", LY6E", B2M", IRF7", SAMD9L", RPL34", CXCR4", MALAT1", EIF2AK2", ISG20", TMSB10", RPLP2", RGS13", RPS27", OAS1", MT-ND3", GAPDH", PRDX1", SELL", YWHAE", EIF5A", RPS29", BASP1", RPS27A", SNRPD1", POLR2L", SEM1", IFI16", MT-ND4", MT-ATP6", FABP5", RPL18A", MARCKSL1", SEC61B", RPS23", GRHPR", SEC61G", RPL11", RPS14", RPS12", MT-CYB", RPL9", HSPA8", UBE2J1"]
+#cluster17 = ["HSPA6", HSPA1A", HSPA1B", HSPA2", DNAJA4", MAFB", DNAJB1", HSPB1", HSPH1", HSP90AA1", RHOB", JUN", AC007952.4", DUSP1", MT-CO2", MT-CO3", B2M", IER5", MT-CO1", GADD45B", MT-ND4", ID2", HLA-B", MKNK2", CD79B", MT-ND3", UBC", MT-CYB", TMSB10", H3F3B", TMSB4X", MT-ND2", JUND", MT-ATP6", RGS2", HSPA8", HLA-A", MT-ND1", HSP90AB1", IGHM", CD79A", MYL6", CD52", PLCG2", HLA-DRB1", HSPD1", FTH1", SOX4", TCP1", SH3BGRL3"]
+#cluster18 = ["PRDM1", ADM", FKBP11", XBP1", MAN1A1", MZB1", RASSF6", LINC01480", SDF2L1", DUSP4", HSP90B1", TXNDC11", DERL3", HIST1H1C", PDIA4", GMPPB", IQGAP2", CHST2", LMAN1", MYDGF", CHPF", BHLHE41", ZNF804A", RGS1", CD38", ANKRD28", BIK", SRGN", COL9A3", DNAJB9", CD9", HSPA5", SEC11C", MANF", IGHM", CKAP4", LAX1", JCHAIN", KLK1", HM13", KCNN3", SEC61A1", QPCT", RPL21", ITPR2", CPEB4", CCDC88A", TRIB1", PPIB", TMSB4X"]
+
+data = filtered_data
+
+
+# In[3]:
+
+
+print("clin shape", clin.shape)
+
+
+# In[4]:
+
+
+data.head()
+
+
+# In[5]:
+
+
+print("data shape", data.shape)
+
+
+# In[6]:
+
+
+print("bincount Sicca/Sjogren:", np.bincount(clin["Disease"]))
+
+
+# In[7]:
+
+
+# Assign response, and split data for train and test
+y =  clin["Disease"]
+X_train, X_test, y_train, y_test = train_test_split(data,
+                                                    y,
+                                                    test_size = 0.3, 
+                                                    random_state = 132)   
+print("X_train shape", X_train.shape)
+print("X_test shape", X_test.shape)
+
+
+# In[8]:
+
+
+# initiate and train the model
+dtrain = xgb.DMatrix(X_train, label=y_train)
+dtest = xgb.DMatrix(X_test, label=y_test)
+param = {'max_depth': 4,                       #  this has to be optimised for your model, range between 0->
+         'eta': 0.03,                           #  this has to be optimised for your model, range between 0-1
+         'objective': 'binary:logistic',       #  this depends on the nature of your model
+        }
+
+param['eval_metric'] = 'auc'                   #  this depends on the objective 
+num_round = 100                                # number of rounds for boosting
+evallist = [(dtest, 'eval'),(dtrain, 'train')] # eval test
+progress = {}
+model = xgb.train(param, dtrain, num_round, 
+                     evals=evallist, evals_result = progress, 
+                     verbose_eval=10, 
+                     early_stopping_rounds=25) 
+
+# classes in y_test
+print(" ")
+print("bincount y_test:", np.bincount(y_test))
+
+
+# In[9]:
+
+
+# Generate test predictions and assign to the nearest classification
+preds = model.predict(dtest)
+prediction =[]
+for i in preds:
+    if i >=0.5:
+        prediction.append(1)
+    else:
+        prediction.append(0)
+print("bincount prediction:", np.bincount(prediction))
+
+
+# In[10]:
+
+
+conf_matrix = confusion_matrix(y_true = y_test, y_pred = prediction)
+
+# Print the confusion matrix using Matplotlib
+fig, ax = plt.subplots(figsize=(5, 5))
+ax.matshow(conf_matrix, cmap=plt.cm.Blues, alpha=0.3)
+for i in range(conf_matrix.shape[0]):
+    for j in range(conf_matrix.shape[1]):
+        ax.text(x=j, y=i,s=conf_matrix[i, j], va='center', ha='center', size='xx-large')
+ 
+plt.xlabel('Predictions', fontsize=18)
+plt.ylabel('Actuals', fontsize=18)
+plt.title('Confusion Matrix', fontsize=18)
+plt.show()
+
+
+# In[11]:
+
+
+# scores
+print('Accuracy: %.3f' % accuracy_score(y_test, prediction))
+print('F1 Score: %.3f' % f1_score(y_test, prediction))
+print('Precision: %.3f' % precision_score(y_test, prediction))
+print('Recall: %.3f' % recall_score(y_test, prediction))
+
+
+# In[12]:
+
+
+y_true = np.array(y_test.values)
+pred_array = np.array(prediction)
+roc = roc_auc_score(y_true, pred_array)
+
+fpr, tpr, thresholds = roc_curve(y_true, pred_array) 
+plt.figure()
+plt.plot(fpr, tpr, label='Model (Area = %0.2f)' % roc) 
+plt.plot([0, 1], [0, 1],'r--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.legend(loc="lower right")
+plt.savefig('XGBoost_ROC')
+plt.show()
+
+
+# In[13]:
+
+
+shap.initjs()
+
+# apply the generated model to the whole dataset and calculate the shap values
+shap_values = shap.TreeExplainer(model).shap_values(data)  
+explainer = shap.TreeExplainer(model, data)
+expected_value = explainer.expected_value
+
+features = data.columns
+
+# convert data DF to array
+data_ = data.to_numpy()
+
+# run predictions for the whole dataset
+d_data = xgb.DMatrix(data, label=y)
+
+preds_data = model.predict(d_data)
+prediction_data =[]
+for i in preds_data:
+    if i >=0.5:
+        prediction_data.append(1)
+    else:
+        prediction_data.append(0)
+
+# print the shap summary plot
+shap.summary_plot(shap_values, data, feature_names=data.columns) 
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
