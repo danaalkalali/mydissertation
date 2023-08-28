@@ -1,3 +1,6 @@
+#Downloaded Jupyter Notebook as .py file to show the ML notebook for the bulk SS data :D 
+#Notebook by Barnes Lab QMUL 
+
 #!/usr/bin/env python
 # coding: utf-8
 
@@ -212,45 +215,6 @@ for i in preds_data:
 
 # print the shap summary plot
 shap.summary_plot(shap_values, data, feature_names=data.columns) 
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 
