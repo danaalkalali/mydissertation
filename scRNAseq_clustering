@@ -160,6 +160,11 @@ print(paste(rownames(x = cluster17.markers)[1:50], collapse = ", "))
 cluster18.markers <- FindMarkers(combined, ident.1 = 18, min.pct = 0.25)
 print(paste(rownames(x = cluster18.markers)[1:50], collapse = ", "))
 
+#a shorter way to do it: 
+for (i in 0:18) {
+  marker_names <- rownames(x = get(paste("cluster", x, ".markers", sep = "")))[1:50]
+  print(paste(marker_names, collapse = ", "))
+}
 
 #Other fun stuff, 
 
@@ -186,5 +191,17 @@ combined.markers %>%
   group_by(cluster) %>%
   top_n(n = 10, wt = avg_log2FC) -> top10
 DoHeatmap(combined, features = top10$gene) + NoLegend()
+
+#####
+
+
+# putting quotations and commas so that it fits into python when I do the bulk analysis:
+
+for (x in 0:18) {
+  cluster_toprint <- rownames(x = get(paste("cluster", x, ".markers", sep = "")))[1:50]
+  cluster_toprint[cluster_toprint == ""] <- as.character(x)
+  cat(paste0("\"", paste(cluster_toprint, collapse = "\", "), "\"\n"))
+}
+
 
 
