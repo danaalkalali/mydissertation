@@ -54,8 +54,11 @@ data = data.T
 #cluster17 = ["HSPA6", HSPA1A", HSPA1B", HSPA2", DNAJA4", MAFB", DNAJB1", HSPB1", HSPH1", HSP90AA1", RHOB", JUN", AC007952.4", DUSP1", MT-CO2", MT-CO3", B2M", IER5", MT-CO1", GADD45B", MT-ND4", ID2", HLA-B", MKNK2", CD79B", MT-ND3", UBC", MT-CYB", TMSB10", H3F3B", TMSB4X", MT-ND2", JUND", MT-ATP6", RGS2", HSPA8", HLA-A", MT-ND1", HSP90AB1", IGHM", CD79A", MYL6", CD52", PLCG2", HLA-DRB1", HSPD1", FTH1", SOX4", TCP1", SH3BGRL3"]
 #cluster18 = ["PRDM1", ADM", FKBP11", XBP1", MAN1A1", MZB1", RASSF6", LINC01480", SDF2L1", DUSP4", HSP90B1", TXNDC11", DERL3", HIST1H1C", PDIA4", GMPPB", IQGAP2", CHST2", LMAN1", MYDGF", CHPF", BHLHE41", ZNF804A", RGS1", CD38", ANKRD28", BIK", SRGN", COL9A3", DNAJB9", CD9", HSPA5", SEC11C", MANF", IGHM", CKAP4", LAX1", JCHAIN", KLK1", HM13", KCNN3", SEC61A1", QPCT", RPL21", ITPR2", CPEB4", CCDC88A", TRIB1", PPIB", TMSB4X"]
 
-filtered_data = data.loc[:, data.columns.isin(cluster0)]
-output_path = '/Users/danaalkalali/Downloads/Dana/output/cluster0genes.csv'
+left_supercluster = cluster8 + cluster11 + cluster15 + cluster13 + cluster17 + cluster9 + cluster6 + cluster10 + cluster18 + cluster12
+right_supercluster = cluster14 + cluster3 + cluster4 + cluster0 + cluster1 + cluster2 + cluster7 + cluster16 + cluster5
+
+filtered_data = data.loc[:, data.columns.isin(cluster_____)]
+output_path = '/Users/danaalkalali/Downloads/Dana/output/cluster____genes.csv'
 filtered_data.to_csv(output_path)
 
 data = filtered_data
