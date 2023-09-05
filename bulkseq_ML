@@ -57,12 +57,7 @@ data = data.T
 left_supercluster = cluster8 + cluster11 + cluster15 + cluster13 + cluster17 + cluster9 + cluster6 + cluster10 + cluster18 + cluster12
 right_supercluster = cluster14 + cluster3 + cluster4 + cluster0 + cluster1 + cluster2 + cluster7 + cluster16 + cluster5
 
-filtered_data = data.loc[:, data.columns.isin(cluster_____)]
-output_path = '/Users/danaalkalali/Downloads/Dana/output/cluster____genes.csv'
-filtered_data.to_csv(output_path)
-
-data = filtered_data
-
+#####################
 
 # In[3]:
 
