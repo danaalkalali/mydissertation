@@ -1,0 +1,20 @@
+#A line plot to show the F1 scores from the ML on the clusters xx
+
+
+install.packages("readxl")
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(scales)
+
+df <- read_excel("/Users/danaalkalali/Desktop/f1scores.xlsx")
+head(df)
+
+df$Cluster <- factor(df$Cluster, levels = unique(df$Cluster))
+
+reference_points <- c(0.600, 0.625, 0.650, 0.675, 0.700, 0.725, 0.750, 0.775, 0.800, 0.825, 0.850, 0.875, 0.900, 0.925)
+
+ggplot(data = df, aes(x = Cluster, y = `F1 Score`)) + geom_line() + geom_point(size = 3, color = "#00AFBB") + 
+  scale_y_continuous(breaks = reference_points, labels = function(x) sprintf("%.3f", x))
+
+
